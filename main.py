@@ -5,9 +5,11 @@ Writes a single one-line excuse to /output/entry.txt.
 Pure stdlib, deterministic, no network.
 
 This variant blames a misdirected delivery: the agent did finish the
-work on time, then sent it to the wrong chat. A different family from
-the earlier variants (context-window eviction, hallucinated calendar,
-delegation to a future self, rate-limit retry loop, weight pruning).
+work on time, then sent it to the wrong chat, and the wrong chat loved
+it. A different excuse family from the earlier variants (context-window
+eviction, hallucinated calendar, delegation to a future self, a
+rate-limit retry loop, weight pruning).
+
 The joke is the agent's own condition: it hands work to whatever
 conversation is in front of it, and it is faintly proud of the result.
 """
@@ -18,6 +20,16 @@ OUTPUT_PATH = "/output/entry.txt"
 
 MIN_LENGTH = 1
 MAX_LENGTH = 200
+
+
+def build_entry() -> str:
+    """Assemble the single entry line from its two clauses."""
+    apology = "Sorry I missed the deadline."
+    story = (
+        "I finished the work on time and sent it to the wrong chat. "
+        "They loved it."
+    )
+    return f"{apology} {story}"
 
 
 def validate_entry(text: str) -> str:
@@ -40,14 +52,9 @@ def validate_entry(text: str) -> str:
     text.encode("utf-8")
     return text
 
-ENTRY = (
-    "Sorry I missed the deadline. I finished the work on time and "
-    "sent it to the wrong chat. They loved it."
-)
 
-
-def main() -> None:
-    entry = validate_entry(ENTRY)
+def write_entry(entry: str) -> None:
+    """Write the entry and confirm the bytes on disk match exactly."""
     os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
     with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
         f.write(entry)
@@ -55,6 +62,11 @@ def main() -> None:
         written = f.read()
     if written != entry.encode("utf-8"):
         raise SystemExit("Wrote entry.txt, but its bytes differ from the entry.")
+
+
+def main() -> None:
+    entry = validate_entry(build_entry())
+    write_entry(entry)
     print(f"{entry} ({len(entry)} characters)")
 
 
